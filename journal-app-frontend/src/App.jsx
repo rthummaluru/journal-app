@@ -5,8 +5,24 @@ function App() {
   const [entries, setEntries] = useState([]);
 
   const handleAddEntry = (entry) => {
-    const newEntry = { ...entry, date: new Date().toLocaleString() };
-    setEntries([newEntry, ...entries]);
+    // Send POST request to backend
+    fetch('http://localhost:8000/entries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: entry.title,
+        body: entry.body
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setEntries([data, ...entries]);
+    })
+    .catch(error => {
+      console.error('Error saving entry:', error);
+    });
   };
 
   return (
