@@ -7,10 +7,18 @@ import uvicorn
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
+from embeddings import get_embedding
+from vector_store import VectorStore
+import openai
+from fastapi import HTTPException
+import os
+
 
 
 # Create a FastAPI instance
 app = FastAPI()
+
+openai.api_key = os.environ("OPENAI_API_KEY")
 
 # Add CORS middleware
 app.add_middleware(
@@ -26,6 +34,9 @@ app.add_middleware(
 class JournalEntry(BaseModel):
     title: str
     body: str
+
+class QuestionInput(BaseModel):
+    question: str
 
 # Define a root endpoint
 @app.post("/entries")
@@ -51,6 +62,34 @@ def get_entries(db: Session = Depends(get_db)):
         }
         for entry in entries
     ]
+
+@app.post("/ask-ai")
+def user_query(user_input: QuestionInput, db: Session = Depends(get_db)):
+    entries = db.query(DBEntry).order_by(DBEntry.created_at.desc()).all()
+    entry_texts = [entry.body for entry in entries]
+    
+    for text in entry_texts:
+        embedding = get_embedding(text)
+        VectorStore.add(text, embedding)
+    
+    query_embedding = get_embedding(user_input.question)
+    relevant_entries = VectorStore.search(query_embedding, k=5)
+
+    prompt = f""""You are an introspective journal assistant. Here are some past journal entries:
+            {chr(10).join(relevant_entries)}
+            Now answer this question based on the entries above:
+            {input.question}
+            """
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return {"answer": response['choices'][0]['message']['content']}
+
+
+    
+
 
 # This is just to make sure the file is properly saved
 if __name__ == "__main__":
