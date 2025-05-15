@@ -12,13 +12,14 @@ from vector_store import VectorStore
 import openai
 from fastapi import HTTPException
 import os
+from dotenv import load_dotenv 
 
-
+load_dotenv()
 
 # Create a FastAPI instance
 app = FastAPI()
 
-openai.api_key = os.environ("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Add CORS middleware
 app.add_middleware(
