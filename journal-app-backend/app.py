@@ -24,7 +24,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ← you can change this to ["http://localhost:5173"] for stricter control
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
