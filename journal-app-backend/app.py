@@ -47,6 +47,12 @@ def new_entry(entry: JournalEntry):
     db.add(db_entry)
     db.commit()
     db.refresh(db_entry)
+
+    # Create an embedding for the entry
+    entry_text = f"{db_entry.title}\n{db_entry.body}"
+    entry_embedding = get_embedding(entry_text)
+    store.add(entry_text, entry_embedding)
+
     return db_entry
 
 # A get endpoint to get all entries
