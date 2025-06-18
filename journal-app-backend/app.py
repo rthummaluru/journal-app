@@ -77,15 +77,15 @@ def user_query(user_input: QuestionInput, db: Session = Depends(get_db)):
     
     for text in entry_texts:
         embedding = get_embedding(text)
-        VectorStore.add(text, embedding)
+        store.add(text, embedding)
     
     query_embedding = get_embedding(user_input.question)
-    relevant_entries = VectorStore.search(query_embedding, k=5)
+    relevant_entries = store.search(query_embedding, k=5)
 
     prompt = f""""You are an introspective journal assistant. Here are some past journal entries:
             {chr(10).join(relevant_entries)}
             Now answer this question based on the entries above:
-            {input.question}
+            {user_input.question}
             """
     response = openai.ChatCompletion.create(
         model="gpt-4",
