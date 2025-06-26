@@ -19,6 +19,9 @@ load_dotenv()
 # Create a FastAPI instance
 app = FastAPI()
 
+# Create a vector store instance
+store = VectorStore()
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Add CORS middleware
